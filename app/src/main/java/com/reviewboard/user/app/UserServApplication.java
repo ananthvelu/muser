@@ -24,7 +24,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @EnableMongoRepositories("com.reviewboard.user.domain.datamodel.impl")
-@ComponentScan({"com.reviewboard.user.service", "com.reviewboard.user.domain.bl.impl", "com.reviewboard.user.domain.dao.impl"})
+@ComponentScan({"com.reviewboard.user.service", "com.reviewboard.user.service.dozer",
+		"com.reviewboard.user.domain.bl.impl", "com.reviewboard.user.domain.dao.impl"})
 @SpringBootApplication
 public class UserServApplication extends SpringBootServletInitializer {
 

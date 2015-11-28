@@ -1,29 +1,31 @@
 package com.reviewboard.user.domain.dto;
 
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
 /**
  * Credentials of the customer
  */
 public class CredentialDAO {
 
+    @Field("userName")
     private String username;
 
+    @Field("email")
     private String email;
 
     /**
      * Request field not for storing purpose.
      */
-
+    @Transient
     private String password;
 
+    @Field("passwordHash")
     private String passwordHash;
 
+    @Field("passwordSalt")
     private String passwordSalt;
-
-    @Override
-    public String toString() {
-        return String.format(
-                "CredentialDAO[username= "+username + " email= " + email +"]");
-    }
 
     public String getUsername() {
         return username;

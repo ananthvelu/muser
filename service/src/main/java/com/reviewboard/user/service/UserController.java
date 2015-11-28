@@ -6,6 +6,7 @@ import com.reviewboard.user.domain.bl.UserBL;
 import com.reviewboard.user.domain.dto.UserDAO;
 import org.dozer.DozerBeanMapper;
 import org.dozer.Mapper;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,17 +24,23 @@ import java.util.List;
 @RestController
 public class UserController {
 
-    private static DozerBeanMapper restDtoMapper = null;
+    @Inject
+    private Mapper userDAOToUserMapper;
+
+    @Inject
+    private Mapper userToDAOMapper;
+
+    @Inject
+    private Mapper credentialRequestMapper;
 
     @Inject
     private UserBL userBL;
 
-    private static final List<String> mapperFileList = Arrays.asList(new String[]{"dozer_rest_model_to_dao.xml", "dozer_dao_to_rest_model.xml"});
-
     /**
      * Get User details based on full name
+     *
      * @param firstName firstname to lookup
-     * @param lastName firstname to lookup
+     * @param lastName  firstname to lookup
      * @return User object
      */
     @RequestMapping(value = "/user", name = "/getbyname", method = RequestMethod.GET, params = {"firstname", "lastname"})
@@ -41,7 +48,7 @@ public class UserController {
                                   @RequestParam(value = "lastname") String lastName) {
         UserDAO userDAO = userBL.getUserByFullName(firstName, lastName);
         if (userDAO != null) {
-            return getDTOMapper().map(userDAO, User.class);
+            return userDAOToUserMapper.map(userDAO, User.class);
         } else {
             throw new NotFoundException(firstName + lastName);
         }
@@ -63,18 +70,20 @@ public class UserController {
 //    }
 
 //
+
     /**
      * Create a new User if not already exists.
+     *
      * @param user user details
      * @return created user details
      */
     @RequestMapping(value = "/user", method = RequestMethod.PUT, produces = "application/json", consumes = "application/json")
     public User createUser(@RequestBody @Valid final User user) {
         UserDAO userDAO;
-        userDAO = getDTOMapper().map(user, UserDAO.class);
+        userDAO = userToDAOMapper.map(user, UserDAO.class);
 
         UserDAO createdUser = userBL.createUser(userDAO);
-        return getDTOMapper().map(createdUser, User.class);
+        return userDAOToUserMapper.map(createdUser, User.class);
     }
 //
 //    /**
@@ -104,19 +113,30 @@ public class UserController {
 //        userBL.changeExistingPassword(userName, oldPassword, newPassword);
 //    }
 
-    private static Mapper getDTOMapper() {
-        if (restDtoMapper == null) {
-            restDtoMapper = new DozerBeanMapper();
-            restDtoMapper.setMappingFiles(mapperFileList);
-        }
-        return restDtoMapper;
-    }
-//
-//    private static Mapper getDTOToRestMapper() {
+//    private static Mapper getDTOMapper() {
 //        if (restDtoMapper == null) {
 //            restDtoMapper = new DozerBeanMapper();
 //            restDtoMapper.setMappingFiles(mapperFileList);
 //        }
 //        return restDtoMapper;
 //    }
+
+    @Inject
+    @Qualifier("userToDAOMapper")
+    private void setUserToDAOMap(Mapper userToDAOMapper) {
+        this.userToDAOMapper = userToDAOMapper;
+    }
+
+    @Inject
+    @Qualifier("userDAOToUserMapper")
+    private void setDozerResponse(Mapper userDAOToUserMapper) {
+        this.userDAOToUserMapper = userDAOToUserMapper;
+    }
+
+    @Inject
+    @Qualifier("credentialRequestMapper")
+    private void setCredentialToDAOMap(Mapper credentialRequestMapper) {
+        this.credentialRequestMapper = credentialRequestMapper;
+    }
+
 }
